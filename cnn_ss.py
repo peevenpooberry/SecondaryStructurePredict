@@ -118,30 +118,3 @@ def train_cnn(model, train_loader, val_loader, epochs=30, lr=1e-3,
     model.load_state_dict(best_state)
     return history
 
-
-# ---------------------------------------------------------------------------
-# Usage, as new cells at the end of your notebook. Reuses train_df / val_df /
-# test_df, encode_seq and encode_labels from earlier, so the comparison with
-# the softmax model is on identical data.
-#
-#   from cnn_ss import *
-#   from softmax_ss import plot_history, report
-#
-#   cnn_train = DataLoader(ChainDataset(train_df, encode_seq, encode_labels),
-#                          batch_size=32, shuffle=True, collate_fn=collate)
-#   cnn_val   = DataLoader(ChainDataset(val_df, encode_seq, encode_labels),
-#                          batch_size=32, shuffle=False, collate_fn=collate)
-#   cnn_test  = DataLoader(ChainDataset(test_df, encode_seq, encode_labels),
-#                          batch_size=32, shuffle=False, collate_fn=collate)
-#
-#   counts = torch.bincount(torch.cat([encode_labels(s) for s in train_df["structure"]])).float()
-#   class_weight = counts.sum() / (len(counts) * counts)
-#
-#   cnn = CNN1D()
-#   history = train_cnn(cnn, cnn_train, cnn_val, epochs=30, lr=1e-3, class_weight=class_weight)
-#   plot_history(history)
-#
-#   loss_fn = nn.CrossEntropyLoss(ignore_index=PAD_LABEL)
-#   _, pred, true = evaluate_cnn(cnn, cnn_test, loss_fn)
-#   report(pred, true)
-# ---------------------------------------------------------------------------

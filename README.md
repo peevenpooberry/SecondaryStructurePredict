@@ -17,7 +17,6 @@ Path:
 1. Create dataframe with pbd_id, chain_id, sequence, structure
 2. Create onehot encoding of sequence with each of the 20 and any noncanonical being X
 3. train test split
-4. 
 
 use pytorch as its the only one with CNN
 

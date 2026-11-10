@@ -123,20 +123,3 @@ def plot_history(history, smooth=50):
     plt.tight_layout()
     plt.show()
 
-
-# ---------------------------------------------------------------------------
-# Usage (after building train_loader / val_loader / test_loader):
-#
-#   train_labels = train_dataset.tensors[1]
-#   counts = torch.bincount(train_labels).float()
-#   class_weight = counts.sum() / (len(counts) * counts)   # balanced weights
-#
-#   model = SoftmaxRegression(n_features=315)
-#   history = train(model, train_loader, val_loader, epochs=20, lr=1e-2,
-#                   class_weight=class_weight)
-#   plot_history(history)
-#
-#   # Final evaluation on the held-out test set (do this once, at the end)
-#   _, pred, true = evaluate(model, test_loader, nn.CrossEntropyLoss())
-#   report(pred, true)
-# ---------------------------------------------------------------------------
