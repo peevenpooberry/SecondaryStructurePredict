@@ -1,0 +1,6 @@
+requests
+biopython
+pandas
+torch
+scikit-learn
+matplotlib
