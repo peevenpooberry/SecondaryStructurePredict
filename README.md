@@ -40,7 +40,7 @@ Classifying the secondary structure of each residue position in a sequence is a 
 
 For instance in a helix, every turn should be 3.6 residues, sheets are around 5-10 residues in length, and loops are around 3-10 residues long.
 
-To solve this problem, I hot encoded each of the 20 amino acids plus non-conventional resiudes and use a sliding window of 15 residues, which is passed into a 1D Convolutional Nerual Network with a softmax classifier, coded in pytorch.
+To solve this problem, I hot encoded each of the 20 amino acids plus a general non-conventional residue, and use a sliding window of 15 residues, which is passed into a 1D Convolutional Nerual Network with a softmax classifier, all coded in pytorch.
 
 There remains a problem with this challenge as the class distribution is not similar. There are far more loops then helicies and sheets, so in evaluation I look at the Recall, Precision, and F1 per class.
 
