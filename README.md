@@ -32,7 +32,7 @@ For this project I decided to reduce this to the 3 simple labels:
 - Sheet (E)
 - Loop (C)
 
-This can be found in `selected_proteins.csv`.
+This dataset can be found in `selected_proteins.csv`.
 
 ## Model
 
