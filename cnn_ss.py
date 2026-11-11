@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import Dataset, DataLoader
+from softmax_ss import EarlyStopping
 
 PAD_LABEL = -100  # ignored by CrossEntropyLoss
 
@@ -44,7 +45,7 @@ class CNN1D(nn.Module):
         self.drop = nn.Dropout(dropout)
 
     def forward(self, x):                       # x: (B, L, 21)
-        mask = (x.sum(dim=2) > 0).unsqueeze(1).float()   # (B, 1, L); real residues = 1
+        mask = (x.abs().sum(dim=2) > 0).unsqueeze(1).float()  # (B, 1, L); real residues = 1
         h = x.transpose(1, 2)                   # (B, 21, L) for Conv1d
         for conv in (self.c1, self.c2, self.c3):
             h = self.drop(self.act(conv(h))) * mask      # keep padded positions at zero
@@ -69,7 +70,8 @@ def evaluate_cnn(model, loader, loss_fn, device="cpu"):
 
 
 def train_cnn(model, train_loader, val_loader, epochs=30, lr=1e-3,
-              class_weight=None, weight_decay=1e-4, patience=5, device="cpu"):
+              class_weight=None, weight_decay=1e-4, patience=5, min_delta=5e-4, 
+              device="cpu"):
     """Train with Adam. Keeps the weights from the epoch with the best validation loss
     and stops early if validation loss doesn't improve for `patience` epochs.
     Returns the same history dict as softmax_ss.train, so plot_history works."""
@@ -82,6 +84,7 @@ def train_cnn(model, train_loader, val_loader, epochs=30, lr=1e-3,
     history = {"train_loss": [], "val_loss": [], "val_q3": [], "batch_loss": []}
     best_val, best_state, bad_epochs = float("inf"), None, 0
 
+    stopper = EarlyStopping(patience, min_delta)
     for epoch in range(1, epochs + 1):
         model.train()
         running, n = 0.0, 0
@@ -107,14 +110,10 @@ def train_cnn(model, train_loader, val_loader, epochs=30, lr=1e-3,
         print(f"epoch {epoch:3d} | train loss {train_loss:.4f} | "
               f"val loss {val_loss:.4f} | val Q3 {q3:.4f}")
 
-        if val_loss < best_val:
-            best_val, best_state, bad_epochs = val_loss, copy.deepcopy(model.state_dict()), 0
-        else:
-            bad_epochs += 1
-            if bad_epochs >= patience:
-                print(f"early stopping at epoch {epoch}")
-                break
+        if stopper.step(val_loss, model):
+            print(f"early stopping at epoch {epoch}")
+            break
 
-    model.load_state_dict(best_state)
+    stopper.restore(model)
     return history
 

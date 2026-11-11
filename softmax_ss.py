@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
+import seaborn as sns
+import copy
 
 CLASSES = ["H", "E", "C"]
 
@@ -14,6 +16,29 @@ class SoftmaxRegression(nn.Module):
 
     def forward(self, x):
         return self.linear(x)
+
+
+class EarlyStopping:
+    """Stop when validation loss hasn't improved by at least `min_delta` for `patience` epochs.
+    Remembers the best weights so you can restore them afterwards."""
+
+    def __init__(self, patience=5, min_delta=5e-4):
+        self.patience, self.min_delta = patience, min_delta
+        self.best, self.best_state, self.bad_epochs = float("inf"), None, 0
+
+    def step(self, val_loss, model):
+        """Call once per epoch. Returns True when training should stop."""
+        if val_loss < self.best - self.min_delta:
+            self.best = val_loss
+            self.best_state = copy.deepcopy(model.state_dict())
+            self.bad_epochs = 0
+        else:
+            self.bad_epochs += 1
+        return self.bad_epochs >= self.patience
+
+    def restore(self, model):
+        if self.best_state is not None:
+            model.load_state_dict(self.best_state)
 
 
 @torch.no_grad()
@@ -37,12 +62,29 @@ def confusion_matrix(pred, true, n_classes=3):
     cm = torch.zeros(n_classes, n_classes, dtype=torch.long)
     idx = true * n_classes + pred
     cm += torch.bincount(idx, minlength=n_classes ** 2).reshape(n_classes, n_classes)
+
     return cm
 
+def plot_confusion(cm, classes=CLASSES):
+    cm = cm.numpy() if hasattr(cm, "numpy") else cm
+    cm_norm = cm / cm.sum(axis=1, keepdims=True)
 
-def report(pred, true, classes=CLASSES):
+    fig, ax = plt.subplots(1, 2, figsize=(11, 4))
+    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues",
+                xticklabels=classes, yticklabels=classes, ax=ax[0])
+    ax[0].set(title="Counts", xlabel="Predicted", ylabel="True")
+    sns.heatmap(cm_norm, annot=True, fmt=".2f", cmap="Blues", vmin=0, vmax=1,
+                xticklabels=classes, yticklabels=classes, ax=ax[1])
+    ax[1].set(title="Row-normalized (recall)", xlabel="Predicted", ylabel="True")
+    plt.tight_layout()
+    plt.show()
+
+
+def report(pred, true, classes=CLASSES, plot=True):
     """Print Q3 plus per-class precision / recall / F1 and the confusion matrix."""
-    cm = confusion_matrix(pred, true, len(classes)).float()
+    cm_long = confusion_matrix(pred, true, len(classes))
+    cm = cm_long.float()
+    plot_confusion(cm_long, classes)
     tp = cm.diag()
     precision = tp / cm.sum(dim=0).clamp(min=1)   # of predicted c, how many were right
     recall = tp / cm.sum(dim=1).clamp(min=1)      # of true c, how many were found
@@ -61,7 +103,8 @@ def report(pred, true, classes=CLASSES):
 
 
 def train(model, train_loader, val_loader, epochs=20, lr=1e-2,
-          class_weight=None, weight_decay=0.0, device="cpu"):
+          class_weight=None, weight_decay=0.0, device="cpu",
+          patience=5, min_delta=5e-4):
     """Train with Adam. Returns a history dict with per-epoch and per-batch losses."""
     model.to(device)
     if class_weight is not None:
@@ -70,6 +113,7 @@ def train(model, train_loader, val_loader, epochs=20, lr=1e-2,
     opt = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
     history = {"train_loss": [], "val_loss": [], "val_q3": [], "batch_loss": []}
+    stopper = EarlyStopping(patience, min_delta)
 
     for epoch in range(1, epochs + 1):
         model.train()
@@ -95,6 +139,11 @@ def train(model, train_loader, val_loader, epochs=20, lr=1e-2,
         print(f"epoch {epoch:3d} | train loss {train_loss:.4f} | "
               f"val loss {val_loss:.4f} | val Q3 {q3:.4f}")
 
+        if stopper.step(val_loss, model):
+            print(f"early stopping at epoch {epoch}")
+            break
+    
+    stopper.restore(model) 
     return history
 
 
