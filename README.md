@@ -58,7 +58,7 @@ To solve this problem, I hot encoded each of the 20 amino acids plus a miscellan
 Additionally, I replaced the hot encoding with a transformer encoder called [ESM-2](https://huggingface.co/facebook/esm2_t6_8M_UR50D) that provides more complex representations of the residues, based in far more training. This model fairly accurately predicts secondary structure of proteins based solely on sequence information.
 
 <iframe
-  src="https://mozilla.github.io/pdf.js/web/viewer.html?file="
+  src="https://mozilla.github.io/pdf.js/web/viewer.html?file=https://raw.githubuser.content.com/peevenpooberry/SecondaryStructurePredict/main/my_arch.pdf"
   width="100%"
   height="600px"
   style="border: none;">
