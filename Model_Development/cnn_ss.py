@@ -1,9 +1,8 @@
-import copy
 import torch
 import torch.nn as nn
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import Dataset, DataLoader
-from Model_Development.softmax_ss import EarlyStopping
+from softmax_ss import EarlyStopping
 
 PAD_LABEL = -100  # ignored by CrossEntropyLoss
 
@@ -82,7 +81,6 @@ def train_cnn(model, train_loader, val_loader, epochs=30, lr=1e-3,
     opt = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
     history = {"train_loss": [], "val_loss": [], "val_q3": [], "batch_loss": []}
-    best_val, best_state, bad_epochs = float("inf"), None, 0
 
     stopper = EarlyStopping(patience, min_delta)
     for epoch in range(1, epochs + 1):

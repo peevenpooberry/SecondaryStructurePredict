@@ -2,13 +2,17 @@ name: structure_classifier_env
 channels:
   - conda-forge
 dependencies:
-  - python>=3.11
-  - torch
-  - pandas
-  - numpy
-  - matplotlib
-  - scikit-learn
-  - transformers
-  - torchview
-  - graphviz
-  - seaborn
+  - python=3.12
+  - ipykernel
+  - ipywidgets
+  - tqdm
+  - pip
+  - pip:
+      - numpy
+      - pandas
+      - scikit-learn
+      - matplotlib
+      - seaborn
+      - torch
+      - transformers
+      - torchinfo
