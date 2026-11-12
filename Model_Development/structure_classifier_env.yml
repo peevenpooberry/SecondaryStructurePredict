@@ -1,0 +1,14 @@
+name: structure_classifier_env
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.11
+  - torch
+  - pandas
+  - numpy
+  - matplotlib
+  - scikit-learn
+  - transformers
+  - torchview
+  - graphviz
+  - seaborn

@@ -48,7 +48,8 @@ Additionally, I replaced the hot encoding with a transformer encoder called [ESM
 
 ## Limitations
 
-- I grouped many secondary structures together to create the 3 label classes, however this is not close to reality and the model has a hard time at correctly predicting loops (C) compared to other structures accurately and precisely.
+- I grouped many secondary structures together to create the 3 label classes, however this is not close to reality and compared to other structures the model has decreased accuracy and precision in predicting loops (C).
+- This model is also not trained on accurate representations of non-canonical residues (not the standard amino acids) as it maps these to a miscellaneous "X" residue.
 
 ## Files
 
