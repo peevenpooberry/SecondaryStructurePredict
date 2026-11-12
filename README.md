@@ -8,7 +8,8 @@ For instance a length 10 nucleic acid has $10^4$ combinations but a protein woul
 
 The 2024 Nobel Prize in Chemistry was awarded for deep learning methods in protein structural prediction. This new field aims to predict complex 3D global (teriary) structure and multisystem (quaternary) structure. This requires very complex model architectures and legendary compute that are unachievable for an undergraduate student to achieve at the TACC for such a project. I aim to do a smaller and far more managable task: predict local interactions (secondary structure) from sequence alone.
 
-![Explaning Protein Structure](Protein_structure.png)
+<img src="Protein_structure.png" alt="Explaning Protein Structure" width="50%">
+
 [By Thomas Shafee - Own work, CC BY 4.0](https://commons.wikimedia.org/w/index.php?curid=52821069)
 
 ## Dataset Creation
