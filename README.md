@@ -6,7 +6,7 @@ In structural biology the task of predicting protein structure was hailed as one
 
 For instance a length 10 nucleic acid has $10^4$ combinations but a protein would have $10^{20}$ combinations, 16 orders of magnitude larger.
 
-The 2024 Nobel Prize in Chemistry was awarded for deep learning methods in protein structural prediction. This new field aims to predict complex 3d teriary structure and multisystem quaternary structure. This requires very complex model architectures and legendary compute that would take forever for an undergraduate student to achieve at the TACC. I aim to do a small more managable task: predict local interactions (secondary structure) from sequence alone.
+The 2024 Nobel Prize in Chemistry was awarded for deep learning methods in protein structural prediction. This new field aims to predict complex 3D global (teriary) structure and multisystem (quaternary) structure. This requires very complex model architectures and legendary compute that are unachievable for an undergraduate student to achieve at the TACC for such a project. I aim to do a smaller and far more managable task: predict local interactions (secondary structure) from sequence alone.
 
 ## Dataset Creation
 
@@ -14,7 +14,7 @@ In biology perhaps the most comprehensive database is the Protein Data Bank (PDB
 
 Fortunately the PDB has their own reduced dataset for training that only has 25% similarity.
 
-Additionally, the Dunbrack lab at the Fox Chase Cancer Center has created an amazing compiling tool called PISCES. That allows me to filter this dataset for the highest quality structures.
+Additionally, the Dunbrack lab at the Fox Chase Cancer Center has created an amazing compiling tool called [PISCES](https://dunbrack.fccc.edu/pisces/PISCES_OptionPage.php). That allows me to filter this dataset for the highest quality structures.
 
 I specifically chose:
 - 25 maximum pairwise percent sequence identity
@@ -26,7 +26,7 @@ I specifically chose:
 
 This dataset contained 8,704 PDB IDs and Chain IDs of the structures in this repository as `selected_chains.txt`.However, I had to then download these structures from the PDB, which after 1 hour on my laptop, I had 8,586 structures.
 
-These structure files come in a CIF format, which details the 3D coordinates of each atom in the structure and their relationships (bonds) to each other. To get secondary structure labels I had to use the program DSSP, which provides 8 labels for secondary structure.
+These structure files come in a CIF format, which details the 3D coordinates of each atom in the structure and their relationships (bonds) to each other. To get secondary structure labels I had to use the field standard program [DSSP](https://github.com/PDB-REDO/dssp), which provides 9 labels for secondary structure.
 For this project I decided to reduce this to the 3 simple labels: 
 - Helix (H)
 - Sheet (E)
@@ -40,9 +40,15 @@ Classifying the secondary structure of each residue position in a sequence is a 
 
 For instance in a helix, every turn should be 3.6 residues, sheets are around 5-10 residues in length, and loops are around 3-10 residues long.
 
-To solve this problem, I hot encoded each of the 20 amino acids plus a general non-conventional residue, and use a sliding window of 15 positions, which is passed into a 1D Convolutional Nerual Network with a softmax classifier, all coded in pytorch.
+To solve this problem, I hot encoded each of the 20 amino acids plus a general non-conventional residue, and use a sliding window of 15 positions, which is passed into a 1D-Convolutional Nerual Network with a softmax classifier, all coded in pytorch.
 
-There remains a problem with this challenge as the class distribution is not similar. There are far more loops then helicies and sheets, so in evaluation I look at the Recall, Precision, and F1 per class.
+Additionally, I replaced the hot encoding with a transformer encoder called [ESM-2](https://huggingface.co/facebook/esm2_t6_8M_UR50D) that provides more complex representations of the residues, based in far more training. This model fairly accurately predicts secondary structure of proteins based solely on sequence information.
+
+![Final Model Evaluation](ESM2_CNN_Softmax_evaluation.png)
+
+## Limitations
+
+- I grouped many secondary structures together to create the 3 label classes, however this is not close to reality and the model has a hard time at correctly predicting loops (C) compared to other structures accurately and precisely.
 
 ## Files
 
@@ -51,3 +57,23 @@ The dataset was created using the `protein_dataset.ipynb` notebook. This uses th
 This data is then explored in the `structure_classifier.ipynb` notebook. First hot encoding the sequence and then encoding the structure labels. Finally this is split into training and testing data. 
 
 I then train the softmax classifier using the `softmax_ss.py` module and finally train the 1D CNN using the `CNN_ss.py` module.
+
+## Conda Environments
+
+Each workflow contains its own conda environment as some of the packages are either incompatible or very large. The workflows follow with the directories
+
+1. Dataset Creation (protein_dataset_env): 
+- Biopython
+- pandas
+- DSSP
+
+2. Model Development (structure_classifier_env):
+- torch
+- pandas
+- numpy
+- matplotlib
+- scikit-learn
+- transformers
+- torchview
+- graphviz
+- seaborn
